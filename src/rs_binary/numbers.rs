@@ -1,4 +1,4 @@
-use super::base::{Decodable, Encodable, PointeredBinary};
+use super::base::{Decodable, Encodable, Codable, PointeredBinary};
 
 macro_rules! impl_number_encodable {
     ($type:ty) => {
@@ -24,16 +24,20 @@ macro_rules! impl_number_decodable {
     };
 }
 
-impl_number_encodable!(u8);
-impl_number_decodable!(u8);
-impl_number_encodable!(u16);
-impl_number_decodable!(u16);
-impl_number_encodable!(i32);
-impl_number_decodable!(i32);
-impl_number_encodable!(f32);
-impl_number_decodable!(f32);
-impl_number_encodable!(f64);
-impl_number_decodable!(f64);
+macro_rules! impl_number_codable {
+    ($type:ty) => {
+        impl_number_encodable!($type);
+        impl_number_decodable!($type);
+        
+        impl Codable for $type {}
+    };
+}
+
+impl_number_codable!(u8);
+impl_number_codable!(u16);
+impl_number_codable!(i32);
+impl_number_codable!(f32);
+impl_number_codable!(f64);
 
 #[cfg(test)]
 mod tests {
