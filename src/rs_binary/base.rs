@@ -7,10 +7,7 @@ pub struct PointeredBinary {
 
 impl PointeredBinary {
     pub fn new(data: Vec<u8>) -> Self {
-        PointeredBinary {
-            data,
-            pointer: 0,
-        }
+        PointeredBinary { data, pointer: 0 }
     }
 
     pub fn get_pointer(&self) -> usize {
@@ -59,3 +56,30 @@ pub trait Decodable {
 }
 
 pub trait Codable: Encodable + Decodable {}
+
+pub trait BinaryController<T> {
+    fn encode(&self, data: T) -> PointeredBinary;
+    fn decode(&self, data: &mut PointeredBinary) -> T;
+}
+
+pub struct DefaultBinaryController<T: Codable> {
+    _marker: std::marker::PhantomData<T>,
+}
+
+impl<T: Codable> DefaultBinaryController<T> {
+    pub fn new() -> Self {
+        DefaultBinaryController {
+            _marker: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T: Codable> BinaryController<T> for DefaultBinaryController<T> {
+    fn encode(&self, data: T) -> PointeredBinary {
+        data.encode()
+    }
+
+    fn decode(&self, data: &mut PointeredBinary) -> T {
+        T::decode(data)
+    }
+}
