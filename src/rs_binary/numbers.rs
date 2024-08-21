@@ -36,6 +36,9 @@ macro_rules! impl_number_codable {
 impl_number_codable!(u8);
 impl_number_codable!(u16);
 impl_number_codable!(i32);
+impl_number_codable!(i64);
+impl_number_codable!(u64);
+impl_number_codable!(usize);
 impl_number_codable!(f32);
 impl_number_codable!(f64);
 
