@@ -48,11 +48,11 @@ impl PointeredBinary {
 }
 
 pub trait Encodable {
-    fn encode(&self) -> PointeredBinary;
+    fn to_binary(&self) -> PointeredBinary;
 }
 
 pub trait Decodable {
-    fn decode(data: &mut PointeredBinary) -> Self;
+    fn from_binary(data: &mut PointeredBinary) -> Self;
 }
 
 pub trait Codable: Encodable + Decodable {}
@@ -76,10 +76,10 @@ impl<T: Codable> DefaultBinaryController<T> {
 
 impl<T: Codable> BinaryController<T> for DefaultBinaryController<T> {
     fn encode(&self, data: T) -> PointeredBinary {
-        data.encode()
+        data.to_binary()
     }
 
     fn decode(&self, data: &mut PointeredBinary) -> T {
-        T::decode(data)
+        T::from_binary(data)
     }
 }

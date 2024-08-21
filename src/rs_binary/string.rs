@@ -16,9 +16,9 @@ impl<T: Codable + NumCast + FromPrimitive> From<String> for DynamicString<T> {
 }
 
 impl<T: Codable + NumCast + FromPrimitive> Encodable for DynamicString<T> {
-    fn encode(&self) -> PointeredBinary {
+    fn to_binary(&self) -> PointeredBinary {
         let length: Option<T> = T::from_usize(self.data.len());
-        let mut binary = length.unwrap().encode();
+        let mut binary = length.unwrap().to_binary();
         for byte in self.data.as_bytes() {
             binary.write(vec![*byte]);
         }
@@ -27,8 +27,8 @@ impl<T: Codable + NumCast + FromPrimitive> Encodable for DynamicString<T> {
 }
 
 impl<T: Codable + NumCast + FromPrimitive> Decodable for DynamicString<T> {
-    fn decode(data: &mut PointeredBinary) -> Self {
-        let length = T::decode(data);
+    fn from_binary(data: &mut PointeredBinary) -> Self {
+        let length = T::from_binary(data);
         let mut string = String::new();
         for _ in 0..length.to_usize().unwrap() {
             let byte = data.read(1).unwrap();
@@ -60,11 +60,11 @@ impl<T: Codable + NumCast + FromPrimitive> BinaryController<String>
 {
     fn encode(&self, data: String) -> PointeredBinary {
         let dynamic_string: DynamicString<T> = data.into();
-        dynamic_string.encode()
+        dynamic_string.to_binary()
     }
 
     fn decode(&self, data: &mut PointeredBinary) -> String {
-        let dynamic_string = DynamicString::<T>::decode(data);
+        let dynamic_string = DynamicString::<T>::from_binary(data);
         dynamic_string.data
     }
 }
@@ -111,7 +111,7 @@ mod tests {
     fn test_dynamic_string_encodable() {
         let string = "Hello, World!".to_string();
         let dynamic_string: DynamicString<u8> = string.into();
-        let encoded = dynamic_string.encode();
+        let encoded = dynamic_string.to_binary();
         let data = encoded.get_data();
         assert_eq!(
             data,
@@ -125,7 +125,7 @@ mod tests {
             13, 72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33,
         ];
         let mut binary = PointeredBinary::new(data);
-        let dynamic_string = DynamicString::<u8>::decode(&mut binary);
+        let dynamic_string = DynamicString::<u8>::from_binary(&mut binary);
         assert_eq!(dynamic_string.data, "Hello, World!");
     }
 
@@ -133,7 +133,7 @@ mod tests {
     fn test_dynamic_u16_string_encodable() {
         let string = "Hello, World!".to_string();
         let dynamic_string: DynamicString<u16> = string.into();
-        let encoded = dynamic_string.encode();
+        let encoded = dynamic_string.to_binary();
         let data = encoded.get_data();
         assert_eq!(
             data,
@@ -147,7 +147,7 @@ mod tests {
             13, 0, 72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33,
         ];
         let mut binary = PointeredBinary::new(data);
-        let dynamic_string = DynamicString::<u16>::decode(&mut binary);
+        let dynamic_string = DynamicString::<u16>::from_binary(&mut binary);
         assert_eq!(dynamic_string.data, "Hello, World!");
     }
 
