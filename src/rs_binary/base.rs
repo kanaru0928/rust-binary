@@ -58,7 +58,7 @@ pub trait Decodable {
 pub trait Codable: Encodable + Decodable {}
 
 pub trait BinaryController<T> {
-    fn encode(&self, data: T) -> PointeredBinary;
+    fn encode(&self, data: &T) -> PointeredBinary;
     fn decode(&self, data: &mut PointeredBinary) -> T;
 }
 
@@ -75,7 +75,7 @@ impl<T: Codable> DefaultBinaryController<T> {
 }
 
 impl<T: Codable> BinaryController<T> for DefaultBinaryController<T> {
-    fn encode(&self, data: T) -> PointeredBinary {
+    fn encode(&self, data: &T) -> PointeredBinary {
         data.to_binary()
     }
 

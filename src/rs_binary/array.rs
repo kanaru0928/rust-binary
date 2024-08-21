@@ -29,7 +29,7 @@ impl<T, BC: BinaryController<T>, U: NumCast + FromPrimitive + Codable>
 impl<T, BC: BinaryController<T>, U: NumCast + FromPrimitive + Codable> BinaryController<Vec<T>>
     for DynamicArrayBinaryController<T, BC, U>
 {
-    fn encode(&self, data: Vec<T>) -> PointeredBinary {
+    fn encode(&self, data: &Vec<T>) -> PointeredBinary {
         let mut binary = PointeredBinary::new(Vec::new());
         let length = U::from_usize(data.len()).unwrap();
         binary.write(length.to_binary().get_data().clone());
@@ -64,11 +64,11 @@ impl<T: Codable, U: NumCast + FromPrimitive + Codable> From<Vec<T>> for DynamicA
     }
 }
 
-impl<T: Codable + Clone, U: NumCast + FromPrimitive + Codable> Encodable for DynamicArray<T, U> {
+impl<T: Codable, U: NumCast + FromPrimitive + Codable> Encodable for DynamicArray<T, U> {
     fn to_binary(&self) -> PointeredBinary {
         let controller = DefaultBinaryController::<T>::new();
         let binary_controller = DynamicArrayBinaryController::<T, _, U>::new(controller);
-        binary_controller.encode(self.data.clone())
+        binary_controller.encode(&self.data)
     }
 }
 
@@ -84,7 +84,7 @@ impl<T: Codable, U: NumCast + FromPrimitive + Codable> Decodable for DynamicArra
     }
 }
 
-impl<T: Codable + Clone, U: NumCast + FromPrimitive + Codable> Codable for DynamicArray<T, U> {}
+impl<T: Codable, U: NumCast + FromPrimitive + Codable> Codable for DynamicArray<T, U> {}
 
 pub struct SizedArrayBinaryController<T, BC: BinaryController<T>> {
     _marker1: std::marker::PhantomData<T>,
@@ -102,13 +102,13 @@ impl<T, BC: BinaryController<T>> SizedArrayBinaryController<T, BC> {
     }
 }
 
-impl<T: Clone, BC: BinaryController<T>> BinaryController<Vec<T>>
+impl<T, BC: BinaryController<T>> BinaryController<Vec<T>>
     for SizedArrayBinaryController<T, BC>
 {
-    fn encode(&self, data: Vec<T>) -> PointeredBinary {
+    fn encode(&self, data: &Vec<T>) -> PointeredBinary {
         let mut binary = PointeredBinary::new(Vec::new());
         for _ in 0..self.length {
-            binary.write(self.controller.encode(data[0].clone()).get_data().clone());
+            binary.write(self.controller.encode(&data[0]).get_data().clone());
         }
         binary
     }
@@ -149,7 +149,7 @@ mod tests {
         let controller = DefaultBinaryController::<u8>::new();
         let array: Vec<u8> = vec![0x12, 0x34, 0x56];
         let sized_array_controller = SizedArrayBinaryController::new(controller, 3);
-        let encoded = sized_array_controller.encode(array);
+        let encoded = sized_array_controller.encode(&array);
         let data = encoded.get_data();
         assert_eq!(data, &[0x12, 0x12, 0x12]);
         

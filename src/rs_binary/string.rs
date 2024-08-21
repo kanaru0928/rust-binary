@@ -58,8 +58,8 @@ impl<T: Codable + NumCast + FromPrimitive> DynamicStringBinaryController<T> {
 impl<T: Codable + NumCast + FromPrimitive> BinaryController<String>
     for DynamicStringBinaryController<T>
 {
-    fn encode(&self, data: String) -> PointeredBinary {
-        let dynamic_string: DynamicString<T> = data.into();
+    fn encode(&self, data: &String) -> PointeredBinary {
+        let dynamic_string: DynamicString<T> = data.clone().into();
         dynamic_string.to_binary()
     }
 
@@ -80,7 +80,7 @@ impl SizedStringBinaryController {
 }
 
 impl BinaryController<String> for SizedStringBinaryController {
-    fn encode(&self, data: String) -> PointeredBinary {
+    fn encode(&self, data: &String) -> PointeredBinary {
         let mut binary = PointeredBinary::new(Vec::new());
         let mut bytes: Vec<u8> = data.as_bytes().to_vec();
         bytes.resize(self.length, 0);
@@ -155,7 +155,7 @@ mod tests {
     fn test_dynamic_u8_string_binary_controller() {
         let string = "Hello, World!".to_string();
         let controller = DynamicStringBinaryController::<u8>::new();
-        let encoded = controller.encode(string.clone());
+        let encoded = controller.encode(&string);
         let data = encoded.get_data();
         assert_eq!(
             data,
@@ -171,7 +171,7 @@ mod tests {
     fn test_dynamic_u16_string_binary_controller() {
         let string = "Hello, World!".to_string();
         let controller = DynamicStringBinaryController::<u16>::new();
-        let encoded = controller.encode(string.clone());
+        let encoded = controller.encode(&string);
         let data: &Vec<u8> = encoded.get_data();
         assert_eq!(
             data,
@@ -187,7 +187,7 @@ mod tests {
     fn test_sized_string_encodable() {
         let string = "Hello, World!".to_string();
         let controller = SizedStringBinaryController::new(20);
-        let encoded = controller.encode(string.clone());
+        let encoded = controller.encode(&string);
         let data = encoded.get_data();
         assert_eq!(
             data,
